@@ -1,5 +1,6 @@
 declare module 'node-mac-contacts' {
-  export type ContactAuthStatus = 'notDetermined' | 'restricted' | 'denied' | 'authorized';
+  // The native code returns these exact strings (with spaces and capitalization)
+  export type ContactAuthStatus = 'Not Determined' | 'Restricted' | 'Denied' | 'Authorized';
 
   export interface ContactPhone {
     label?: string;
@@ -11,34 +12,53 @@ declare module 'node-mac-contacts' {
     value: string;
   }
 
+  export interface ContactUrl {
+    label?: string;
+    value: string;
+  }
+
+  export interface ContactAddress {
+    label?: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  }
+
+  // The contact object returned by getAllContacts and getContactsByName
   export interface RawContact {
     identifier: string;
-    firstName?: string;  // The actual API returns firstName
-    lastName?: string;   // The actual API returns lastName
-    givenName?: string;  // May also be present
-    familyName?: string; // May also be present
-    middleName?: string;
+    firstName?: string;      // CNContactGivenName
+    lastName?: string;       // CNContactFamilyName
+    middleName?: string;     // CNContactMiddleName (optional property)
+    nickname?: string;       // CNContactNicknameKey
     phoneNumbers?: ContactPhone[];
     emailAddresses?: ContactEmail[];
-    birthday?: string;
+    postalAddresses?: ContactAddress[];
+    birthday?: string;       // Format: YYYY-MM-DD
     organizationName?: string;
     jobTitle?: string;
     departmentName?: string;
     note?: string;
-    contactImage?: string;
-    contactThumbnailImage?: string;
+    // Optional properties that must be requested via properties parameter
+    contactImage?: string;           // Base64 encoded image
+    contactThumbnailImage?: string;  // Base64 encoded thumbnail
     instantMessageAddresses?: any[];
     socialProfiles?: any[];
-    urlAddresses?: any[];
+    urlAddresses?: ContactUrl[];
   }
 
+  // The contact data structure for creating/updating contacts
   export interface ContactData {
-    givenName?: string;
-    familyName?: string;
+    firstName?: string;
+    lastName?: string;
     middleName?: string;
-    phoneNumbers?: ContactPhone[];
-    emailAddresses?: ContactEmail[];
-    birthday?: string;
+    nickname?: string;
+    phoneNumbers?: Array<string | ContactPhone>;
+    emailAddresses?: Array<string | ContactEmail>;
+    urlAddresses?: Array<string | ContactUrl>;
+    birthday?: string;  // Must be YYYY-MM-DD format
     organizationName?: string;
     jobTitle?: string;
     departmentName?: string;
@@ -55,7 +75,7 @@ declare module 'node-mac-contacts' {
   export function requestAccess(): Promise<void>;
   export function getAllContacts(properties?: string[]): RawContact[];
   export function getContactsByName(name: string, properties?: string[]): RawContact[];
-  export function addNewContact(contact: ContactData): string;
+  export function addNewContact(contact: ContactData): boolean;  // Returns success boolean
   export function updateContact(contact: ContactData & { identifier: string }): boolean;
   export function deleteContact(contact: { identifier?: string; name?: string }): boolean;
   export const listener: ContactsListener;
