@@ -3,6 +3,7 @@
   "version": "1.7.5-beta1",
   "description": "A native module that allows you to access and manipulate macOS contacts",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "build": "node-gyp configure && node-gyp build",
     "build:dev": "node-gyp build --debug",
